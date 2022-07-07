@@ -58,3 +58,6 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+# Third Party Art Assets Used
+/Assets/InfinityPBR/
+/Assets/_TerrainAutoUpgrade/
