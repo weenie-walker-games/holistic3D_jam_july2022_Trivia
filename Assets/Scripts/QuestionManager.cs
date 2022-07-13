@@ -7,7 +7,7 @@ namespace WeenieWalker
 {
     public class QuestionManager : MonoBehaviour
     {
-        public static event Action<int> OnSettingDifficulty;
+        public static event Action<string> OnSettingDifficulty;
         public static event Action<string> OnSettingCategory;
         public static event Action<string> OnSettingQuestion;
         public static event Action<string, List<string>> OnSettingAnswers;
@@ -28,47 +28,29 @@ namespace WeenieWalker
 
         private void OnEnable()
         {
-            
+            GameManager.OnAskingQuestion += SetAllQuestionInfo;
         }
 
         private void OnDisable()
         {
-            
+            GameManager.OnAskingQuestion -= SetAllQuestionInfo;
         }
 
         private void Start()
         {
-            SetAllQuestionInfo();
+
         }
 
-        private void SetAllQuestionInfo()
+        private void SetAllQuestionInfo(bool isAsking)
         {
-            OnSettingCategory?.Invoke(categoryString);
-            OnSettingDifficulty?.Invoke(ConvertDifficulty());
-            OnSettingQuestion?.Invoke(questionString);
-            OnSettingAnswers?.Invoke(correctAnswerString, incorrectAnswerList);
-        }
-
-        private int ConvertDifficulty()
-        {
-            int result = -1;
-            switch (difficultyString)
+            if (isAsking)
             {
-                case "hard":
-                    result = 2;
-                    break;
-                case "medium":
-                    result = 1;
-                    break;
-                case "easy":
-                    result = 0;
-                    break;
-                default:
-                    result = -1;
-                    break;
+                OnSettingCategory?.Invoke(categoryString);
+                OnSettingDifficulty?.Invoke(difficultyString);
+                OnSettingQuestion?.Invoke(questionString);
+                OnSettingAnswers?.Invoke(correctAnswerString, incorrectAnswerList);
             }
-
-            return result;
         }
+
     }
 }

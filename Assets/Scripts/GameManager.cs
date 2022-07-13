@@ -8,26 +8,61 @@ namespace WeenieWalker
     public class GameManager : MonoSingleton<GameManager>
     {
         public static event Action<bool> OnAskingQuestion;
+        public static Action<bool, string> OnAnsweredQuestion;
+
+
+        [SerializeField] List<GameObject> moveToTimelines = new List<GameObject>();
+        [SerializeField] List<GameObject> moveBackTimelines = new List<GameObject>();
+        private GameObject currentTimelineActive = null;
 
         private void OnEnable()
         {
-            
+            OnAnsweredQuestion += QuestionAnswered;
         }
 
         private void OnDisable()
         {
-            
+            OnAnsweredQuestion -= QuestionAnswered;
         }
 
         private void Start()
+        {
+            AskQuestion();
+        }
+
+        private void AskQuestion()
         {
             OnAskingQuestion?.Invoke(true);
         }
 
 
-        public void QuestionAnswered(bool isCorrect)
+        private void QuestionAnswered(bool isCorrect, string difficulty)
         {
-            Debug.Log("Your guess is " + isCorrect);
+            MoveToAnswer(isCorrect);
+        }
+
+        private void MoveToAnswer(bool isCorrect)
+        {
+            if (currentTimelineActive != null)
+                currentTimelineActive.SetActive(false);
+
+            int option = isCorrect ? 0 : 1;
+
+            currentTimelineActive = moveToTimelines[option];
+            currentTimelineActive.SetActive(true);
+        }
+
+        public void MoveBackToDefault(bool fromCorrect)
+        {
+            if (currentTimelineActive != null)
+                currentTimelineActive.SetActive(false);
+
+            int option = fromCorrect ? 0 : 1;
+
+            currentTimelineActive = moveBackTimelines[option];
+            currentTimelineActive.SetActive(true);
+
+            Invoke("AskQuestion", 2f);
         }
     }
 }
