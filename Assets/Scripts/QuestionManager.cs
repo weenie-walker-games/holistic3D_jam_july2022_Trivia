@@ -13,6 +13,9 @@ namespace WeenieWalker
         public static event Action<string, List<string>> OnSettingAnswers;
 
 
+        int streak = 0;
+        int longestStreak = 0;
+
         #region TestingVariables
         public int responseCode;
         public string questionType = "multiple";
@@ -29,16 +32,28 @@ namespace WeenieWalker
         private void OnEnable()
         {
             GameManager.OnAskingQuestion += SetAllQuestionInfo;
+            GameManager.OnAnsweredQuestion += AnsweredQuestion;
+            GameManager.OnNewGame += Reset;
+            UIManager.OnReturnQuestionStreak += ReturnStreak;
         }
 
         private void OnDisable()
         {
             GameManager.OnAskingQuestion -= SetAllQuestionInfo;
+            GameManager.OnAnsweredQuestion -= AnsweredQuestion;
+            GameManager.OnNewGame -= Reset;
+            UIManager.OnReturnQuestionStreak -= ReturnStreak;
         }
 
         private void Start()
         {
+            Reset();
+        }
 
+        private void Reset()
+        {
+            streak = 0;
+            longestStreak = 0;
         }
 
         private void SetAllQuestionInfo(bool isAsking)
@@ -50,6 +65,27 @@ namespace WeenieWalker
                 OnSettingQuestion?.Invoke(questionString);
                 OnSettingAnswers?.Invoke(correctAnswerString, incorrectAnswerList);
             }
+        }
+
+        private void AnsweredQuestion(bool isCorrect, string difficulty)
+        {
+            if (isCorrect)
+            {
+                streak++;
+
+            }
+            else
+            {
+                streak = 0;
+            }
+
+            if (streak > longestStreak) longestStreak = streak;
+        }
+
+        private int ReturnStreak()
+        {
+            Debug.Log("Returning " + longestStreak);
+            return longestStreak;
         }
 
     }

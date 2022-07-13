@@ -9,6 +9,8 @@ namespace WeenieWalker
     {
         public static event Action<bool> OnAskingQuestion;
         public static Action<bool, string> OnAnsweredQuestion;
+        public static Action<bool> OnGameEnd;
+        public static Action OnNewGame;
 
 
         [SerializeField] List<GameObject> moveToTimelines = new List<GameObject>();
@@ -18,16 +20,18 @@ namespace WeenieWalker
         private void OnEnable()
         {
             OnAnsweredQuestion += QuestionAnswered;
+            OnGameEnd += EndGame;
         }
 
         private void OnDisable()
         {
             OnAnsweredQuestion -= QuestionAnswered;
+            OnGameEnd -= EndGame;
         }
 
         private void Start()
         {
-            AskQuestion();
+            Invoke("AskQuestion",1f);
         }
 
         private void AskQuestion()
@@ -63,6 +67,16 @@ namespace WeenieWalker
             currentTimelineActive.SetActive(true);
 
             Invoke("AskQuestion", 2f);
+        }
+
+        private void EndGame(bool isGameOver)
+        {
+
+        }
+
+        public void NewGame()
+        {
+            OnNewGame?.Invoke();
         }
     }
 }

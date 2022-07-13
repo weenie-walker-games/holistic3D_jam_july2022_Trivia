@@ -12,9 +12,10 @@ namespace WeenieWalker
 
         [SerializeField] int minCoinAmount = 1;
         [SerializeField] int maxCoinAmount = 5;
-        private int coins = 0;
-        private int gems = 0;
-        private int hearts = 3;
+        public int Coins { get; private set; } = 0;
+        public int Gems { get; private set; } = 0;
+        private int hearts;
+        [SerializeField] int maxHearts = 3;
         public int newCoinValue = 1;
         private bool correctlyAnswered = false;
 
@@ -41,8 +42,10 @@ namespace WeenieWalker
 
         private void Start()
         {
-            OnUpdateCoins?.Invoke(coins);
-            OnUpdateGems?.Invoke(gems);
+            hearts = maxHearts;
+
+            OnUpdateCoins?.Invoke(Coins);
+            OnUpdateGems?.Invoke(Gems);
             OnUpdateHearts?.Invoke(hearts, false);
         }
 
@@ -76,15 +79,15 @@ namespace WeenieWalker
                 switch (difficulty)
                 {
                     case "easy":
-                        gems += 1;
+                        Gems += 1;
                         newCoinValue *= 2;
                         break;
                     case "medium":
-                        gems += 5;
+                        Gems += 5;
                         newCoinValue *= 3;
                         break;
                     case "hard":
-                        gems += 10;
+                        Gems += 10;
                         newCoinValue *= 4;
                         break;
                     default:
@@ -92,7 +95,7 @@ namespace WeenieWalker
                 }
             }
 
-            OnUpdateGems?.Invoke(gems);
+            OnUpdateGems?.Invoke(Gems);
         }
 
         private void LootChestPicked(bool isMimic)
@@ -110,12 +113,15 @@ namespace WeenieWalker
                 yield return new WaitForSeconds(1.5f);
                 OnUpdateHearts?.Invoke(hearts, true);
 
+                if (hearts < 0)
+                    GameManager.OnGameEnd?.Invoke(true);
+
             }
             else
             {
                 collectionSound.Play();
-                coins += newCoinValue;
-                OnUpdateCoins?.Invoke(coins);
+                Coins += newCoinValue;
+                OnUpdateCoins?.Invoke(Coins);
                 yield return new WaitForSeconds(3f);
                 collectionSound.Stop();
                 GameManager.Instance.MoveBackToDefault(correctlyAnswered);

@@ -8,8 +8,10 @@ namespace WeenieWalker
 {
     public class UIManager : MonoSingleton<UIManager>
     {
+        public static event System.Func<int> OnReturnQuestionStreak;
+
         [Header("Question Related")]
-        [SerializeField] GameObject gameQuestionCanvas; 
+        [SerializeField] GameObject gameQuestionCanvas;
 
         [SerializeField] TMP_Text questionTextSpot;
         [SerializeField] Image difficultyImageSpot;
@@ -24,11 +26,20 @@ namespace WeenieWalker
         [SerializeField] List<TMP_Text> multipleAnswerSpots = new List<TMP_Text>();
 
         [Header("HUD Related")]
+        [SerializeField] GameObject hudCanvas;
         [SerializeField] TMP_Text coinText;
         [SerializeField] TMP_Text heartText;
         [SerializeField] TMP_Text gemText;
-        [SerializeField] GameObject messageCanvas;
+        [SerializeField] TMP_Text streakText;
 
+        [Header("MessageCanvases")]
+        [SerializeField] GameObject lostHeartCanvas;
+        [SerializeField] GameObject endGameCanvas;
+        [SerializeField] TMP_Text totalGemsText;
+        [SerializeField] TMP_Text totalCoinsText;
+        [SerializeField] TMP_Text multiplierText;
+        [SerializeField] List<Vector2> multiplierValues = new List<Vector2>();
+        Coroutine endGameRoutine;
 
         private List<string> answers = new List<string>();
         private string storedCorrectAnswer = "";
@@ -38,6 +49,9 @@ namespace WeenieWalker
         private void OnEnable()
         {
             GameManager.OnAskingQuestion += AskQuestion;
+            GameManager.OnGameEnd += EndGame;
+            GameManager.OnNewGame += ResetUIs;
+            GameManager.OnNewGame += ResetQuestionUI;
             QuestionManager.OnSettingDifficulty += SetDifficultyImage;
             QuestionManager.OnSettingCategory += SetCategory;
             QuestionManager.OnSettingQuestion += SetQuestion;
@@ -50,6 +64,9 @@ namespace WeenieWalker
         private void OnDisable()
         {
             GameManager.OnAskingQuestion -= AskQuestion;
+            GameManager.OnGameEnd -= EndGame;
+            GameManager.OnNewGame -= ResetUIs;
+            GameManager.OnNewGame -= ResetQuestionUI;
             QuestionManager.OnSettingDifficulty -= SetDifficultyImage;
             QuestionManager.OnSettingCategory -= SetCategory;
             QuestionManager.OnSettingQuestion -= SetQuestion;
@@ -61,11 +78,21 @@ namespace WeenieWalker
 
         private void Start()
         {
-            messageCanvas.SetActive(false);
+            ResetUIs();
+            ResetQuestionUI();
 
+            SetStreakText();
         }
 
-        public void ResetQuestionUI()
+        private void ResetUIs()
+        {
+
+            lostHeartCanvas.SetActive(false);
+            endGameCanvas.SetActive(false);
+            hudCanvas.SetActive(true);
+        }
+
+        private void ResetQuestionUI()
         {
             storedCorrectAnswer = "";
             answers.Clear();
@@ -152,8 +179,19 @@ namespace WeenieWalker
 
             GameManager.OnAnsweredQuestion(correctlyGuessed, difficultyString);
             ResetQuestionUI();
+
+            if (correctlyGuessed)
+                SetStreakText();
         }
 
+        private void SetStreakText()
+        {
+            int currentStreak = (int)OnReturnQuestionStreak?.Invoke();
+            string streakTextValue = "x" + currentStreak.ToString();
+            streakText.text = streakTextValue;
+
+            streakText.gameObject.SetActive(currentStreak >0);
+        }
 
         private void SetCoins(int amount)
         {
@@ -169,7 +207,10 @@ namespace WeenieWalker
         {
             heartText.text = amount.ToString();
             if (isLosingALife)
-                messageCanvas.SetActive(true);
+            {
+                if(amount >= 0)
+                    lostHeartCanvas.SetActive(true);
+            }
         }
 
 
@@ -197,8 +238,73 @@ namespace WeenieWalker
 
         public void CloseCanvas()
         {
-            messageCanvas.SetActive(false);
+            lostHeartCanvas.SetActive(false);
             GameManager.Instance.MoveBackToDefault(false);
+        }
+
+        private void EndGame(bool isGameOver)
+        {
+            hudCanvas.SetActive(false);
+
+            int coins = LootManager.Instance.Coins;
+            int gems = LootManager.Instance.Gems;
+            totalCoinsText.text = coins.ToString();
+            totalGemsText.text = gems.ToString();
+            multiplierText.gameObject.SetActive(false);
+            endGameCanvas.SetActive(true);
+
+            var streak = OnReturnQuestionStreak?.Invoke();
+
+            if (endGameRoutine != null) StopCoroutine(endGameRoutine);
+            endGameRoutine = StartCoroutine(EndGameAnimation(coins, gems, (int)streak));
+
+        }
+
+        IEnumerator EndGameAnimation(int coins, int gems, int streak)
+        {
+            //Create the multiplier amount
+            int pickedMultiplier = EvaluateStreakMulitplier(streak);
+            multiplierText.text = "x" + pickedMultiplier.ToString();
+            multiplierText.gameObject.SetActive(true);
+            yield return new WaitForSeconds(0.5f);
+
+            //convert gems to coins
+
+            if (gems > 0)
+            {
+
+                float tempGems = gems;
+                float rate = tempGems / 2.0f;
+                float tempCoins = coins;
+
+                while (tempGems > 0)
+                {
+                    float amountReduced = rate * Time.deltaTime;
+                    tempGems -= amountReduced;
+
+                    tempCoins += amountReduced * pickedMultiplier;
+
+                    totalGemsText.text = ((int)tempGems).ToString();
+                    totalCoinsText.text = ((int)tempCoins).ToString();
+
+                    yield return new WaitForEndOfFrame();
+                }
+
+            }
+        }
+
+        private int EvaluateStreakMulitplier(int streak)
+        {
+            int result = 1;
+
+            for (int i = 0; i < multiplierValues.Count; i++)
+            {
+                if (streak >= multiplierValues[i].x)
+                    result = (int) multiplierValues[i].y;
+            }
+
+            return result;
+
         }
     }
 }
