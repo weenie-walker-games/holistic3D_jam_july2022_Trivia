@@ -30,6 +30,7 @@ namespace WeenieWalker
         {
             GameManager.OnAskingQuestion += AskingQuestion;
             GameManager.OnAnsweredQuestion += QuestionAnswered;
+            GameManager.OnNewGame += Reset;
             LootChest.OnLootChestPicked += LootChestPicked;
         }
 
@@ -37,12 +38,15 @@ namespace WeenieWalker
         {
             GameManager.OnAskingQuestion += AskingQuestion;
             GameManager.OnAnsweredQuestion -= QuestionAnswered;
+            GameManager.OnNewGame -= Reset;
             LootChest.OnLootChestPicked -= LootChestPicked;
         }
 
-        private void Start()
+        private void Reset()
         {
             hearts = maxHearts;
+            Coins = 0;
+            Gems = 0;
 
             OnUpdateCoins?.Invoke(Coins);
             OnUpdateGems?.Invoke(Gems);
@@ -75,6 +79,7 @@ namespace WeenieWalker
 
             if (isCorrect)
             {
+                newCoinValue += 2;
 
                 switch (difficulty)
                 {

@@ -31,7 +31,7 @@ namespace WeenieWalker
 
         private void Start()
         {
-            Invoke("AskQuestion",1f);
+            NewGame();
         }
 
         private void AskQuestion()
@@ -71,12 +71,13 @@ namespace WeenieWalker
 
         private void EndGame(bool isGameOver)
         {
-
+            MoveBackToDefault(false);
         }
 
         public void NewGame()
         {
             OnNewGame?.Invoke();
+            Invoke("AskQuestion", 1f);
         }
     }
 }

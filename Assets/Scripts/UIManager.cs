@@ -76,20 +76,14 @@ namespace WeenieWalker
             LootManager.OnUpdateHearts -= SetHearts;
         }
 
-        private void Start()
-        {
-            ResetUIs();
-            ResetQuestionUI();
-
-            SetStreakText();
-        }
 
         private void ResetUIs()
         {
-
             lostHeartCanvas.SetActive(false);
             endGameCanvas.SetActive(false);
             hudCanvas.SetActive(true);
+
+            Invoke("SetStreakText", 0.25f);
         }
 
         private void ResetQuestionUI()
