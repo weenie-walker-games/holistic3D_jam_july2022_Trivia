@@ -56,7 +56,7 @@ namespace WeenieWalker
             currentTimelineActive.SetActive(true);
         }
 
-        public void MoveBackToDefault(bool fromCorrect)
+        public void MoveBackToDefault(bool fromCorrect, bool isGameOver = false)
         {
             if (currentTimelineActive != null)
                 currentTimelineActive.SetActive(false);
@@ -66,12 +66,13 @@ namespace WeenieWalker
             currentTimelineActive = moveBackTimelines[option];
             currentTimelineActive.SetActive(true);
 
-            Invoke("AskQuestion", 2f);
+            if(!isGameOver)
+                Invoke("AskQuestion", 2f);
         }
 
         private void EndGame(bool isGameOver)
         {
-            MoveBackToDefault(false);
+            MoveBackToDefault(false, true);
         }
 
         public void NewGame()
