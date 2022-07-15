@@ -31,7 +31,7 @@ namespace WeenieWalker
 
         private void Start()
         {
-            NewGame();
+
         }
 
         private void AskQuestion()
