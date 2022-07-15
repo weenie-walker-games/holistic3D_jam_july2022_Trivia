@@ -36,5 +36,13 @@ namespace WeenieWalker
             }
         }
 
+        public void PlayVOClip(int clipNum)
+        {
+
+            AudioClip clip = voClips[clipNum];
+
+            source.clip = clip;
+            source.Play();
+        }
     }
 }

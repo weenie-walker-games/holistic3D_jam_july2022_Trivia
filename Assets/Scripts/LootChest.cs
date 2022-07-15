@@ -34,19 +34,39 @@ namespace WeenieWalker
                 }
             } }
 
+        bool isOpening = false;
 
         private void OnEnable()
         {
-         
+            GameManager.OnAskingQuestion += AskingQuestion;
+            OnLootChestPicked += LootChestPicked;
         }
 
         private void OnDisable()
         {
-            
+            GameManager.OnAskingQuestion -= AskingQuestion;
+            OnLootChestPicked += LootChestPicked;
+        }
+
+        private void LootChestPicked(bool isMimic)
+        {
+            //this shows another chest was picked
+            isOpening = true;
+        }
+
+        private void AskingQuestion(bool isAsking)
+        {
+            if (isAsking)
+                isOpening = false;
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            if (isOpening)
+                return;
+
+            isOpening = true;
+
             if(IsMimic)
             {
                 mimicAnimator.SetTrigger("attack1");
