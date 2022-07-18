@@ -27,6 +27,7 @@ namespace WeenieWalker
         int currentQuestionNumber = 0;
         int maxQuestions = 50;  //This comes from the API
         bool isGettingQuestions = false;
+        bool hasToken = false;
 
         #region TestingVariables
         public int responseCode;
@@ -57,19 +58,15 @@ namespace WeenieWalker
             UIManager.OnReturnQuestionStreak -= ReturnStreak;
         }
 
-        private void Start()
-        {
-            Reset();
-        }
 
         private void Reset()
         {
             streak = 0;
             longestStreak = 0;
 
-            if (questionsRoutine != null) StopCoroutine(questionsRoutine);
+            //if (questionsRoutine != null) StopCoroutine(questionsRoutine);
 
-            questionsRoutine = StartCoroutine(GetQuestions(false));
+            //questionsRoutine = StartCoroutine(GetQuestions(false));
 
         }
 
@@ -152,13 +149,18 @@ namespace WeenieWalker
 
         IEnumerator GetQuestions(bool isAsking)
         {
+
             //Get a session token if one is not already stored
-            if (sessionToken == "")
+            if (!hasToken)
             {
                 GetSessionToken();
-                yield return new WaitForSeconds(0.1f);
 
-                if (sessionToken == "") GameManager.Instance.NewGame();
+                while (!hasToken)
+                {
+                    yield return new WaitForSeconds(1f);
+                }
+
+                //should have a session token now
             }
 
             string uri = $"https://opentdb.com/api.php?amount={maxQuestions}&encode=base64&token={sessionToken}";
@@ -219,6 +221,7 @@ namespace WeenieWalker
                         SessionInfo sessionInfo = new SessionInfo();
                         sessionInfo = SessionInfo.CreateFromJSON(result);
                         sessionToken = sessionInfo.token;
+                        hasToken = true;
                         break;
                     case UnityWebRequest.Result.ConnectionError:
                         GameManager.Instance.NewGame();

@@ -97,7 +97,8 @@ namespace WeenieWalker
 
         private void AskQuestion(bool isActive)
         {
-            gameQuestionCanvas.SetActive(isActive);
+            if(!isActive)
+                gameQuestionCanvas.SetActive(isActive);
         }
 
         private void SetDifficultyImage(string difficulty)
@@ -121,6 +122,7 @@ namespace WeenieWalker
         private void SetQuestion(string question)
         {
             questionTextSpot.text = question;
+            gameQuestionCanvas.SetActive(true);
         }
 
         private void SetAnswers(string correctAnswer, List<string> incorrectAnswers)
