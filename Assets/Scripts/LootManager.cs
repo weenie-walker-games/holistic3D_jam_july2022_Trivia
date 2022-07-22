@@ -32,7 +32,10 @@ namespace WeenieWalker
             GameManager.OnAnsweredQuestion += QuestionAnswered;
             GameManager.OnNewGame += Reset;
             LootChest.OnLootChestPicked += LootChestPicked;
+            LootChest.OnGetCoinsEarned += ReturnCoinsEarned;
         }
+
+
 
         private void OnDisable()
         {
@@ -40,6 +43,7 @@ namespace WeenieWalker
             GameManager.OnAnsweredQuestion -= QuestionAnswered;
             GameManager.OnNewGame -= Reset;
             LootChest.OnLootChestPicked -= LootChestPicked;
+            LootChest.OnGetCoinsEarned -= ReturnCoinsEarned;
         }
 
         private void Reset()
@@ -101,6 +105,11 @@ namespace WeenieWalker
             }
 
             OnUpdateGems?.Invoke(Gems);
+        }
+
+        private int ReturnCoinsEarned()
+        {
+            return newCoinValue;
         }
 
         private void LootChestPicked(bool isMimic)
