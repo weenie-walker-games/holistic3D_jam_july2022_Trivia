@@ -40,9 +40,11 @@ namespace WeenieWalker
         [SerializeField] TMP_Text multiplierText;
         [SerializeField] List<Vector2> multiplierValues = new List<Vector2>();
         Coroutine endGameRoutine;
+        Coroutine checkAnswerRoutine;
 
         private List<string> answers = new List<string>();
         private string storedCorrectAnswer = "";
+        private GameObject correctAnswerSpot = null;
         private int currentlySelectedOption = -1;
         private bool isMultiple = false;
 
@@ -89,6 +91,7 @@ namespace WeenieWalker
         private void ResetQuestionUI()
         {
             storedCorrectAnswer = "";
+            correctAnswerSpot = null;
             answers.Clear();
             currentlySelectedOption = -1;
             isMultiple = false;
@@ -141,12 +144,18 @@ namespace WeenieWalker
                 for (int i = 0; i < multipleAnswerSpots.Count; i++)
                 {
                     int chosenAnswer = Random.Range(0, answers.Count);
+
+                    if (answers[chosenAnswer] == storedCorrectAnswer) correctAnswerSpot = multipleAnswerSpots[i].gameObject;
                     multipleAnswerSpots[i].text = answers[chosenAnswer];
                     answers.RemoveAt(chosenAnswer);
                 }
             }
             else
             {
+                if (storedCorrectAnswer == "true")
+                    correctAnswerSpot = booleanAnswerSpots[0].gameObject;
+                else
+                    correctAnswerSpot = booleanAnswerSpots[1].gameObject;
                 booleanAnswerHolder.SetActive(true);
                 multipleAnswerHolder.SetActive(false);
             }
@@ -173,8 +182,30 @@ namespace WeenieWalker
                 correctlyGuessed = booleanAnswerSpots[currentlySelectedOption].text == storedCorrectAnswer;
             }
 
+            if (checkAnswerRoutine != null) StopCoroutine(checkAnswerRoutine);
+            checkAnswerRoutine = StartCoroutine(DetermineAnswer(correctlyGuessed));
+
+        }
+
+        IEnumerator DetermineAnswer(bool correctlyGuessed)
+        {
+            Color color;
+            Image correctImage = correctAnswerSpot.GetComponentInParent<Image>();
+
+            color = correctImage.color;
+            if (correctlyGuessed)
+                correctImage.color = Color.green;
+            else
+                correctImage.color = Color.red;
+
+            AudioManager.Instance.PlayAnsweredQuestionClip(correctlyGuessed);
+
+            yield return new WaitForSeconds(1.5f);
+
             GameManager.OnAnsweredQuestion(correctlyGuessed, difficultyString);
             ResetQuestionUI();
+
+            correctImage.color = color;
 
             if (correctlyGuessed)
                 SetStreakText();

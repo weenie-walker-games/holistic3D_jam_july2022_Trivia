@@ -7,8 +7,9 @@ namespace WeenieWalker
     public class AudioManager : MonoSingleton<AudioManager>
     {
 
-        [SerializeField] AudioSource source;
-        [SerializeField] List<AudioClip> voClips;
+        [SerializeField] List<AudioSource> sources = new List<AudioSource>();
+        [SerializeField] List<AudioClip> voClips = new List<AudioClip>();
+        [SerializeField] List<AudioClip> questionAnswerClips = new List<AudioClip>();
         [SerializeField] float mimicWait = 1f;
 
         private void OnEnable()
@@ -31,8 +32,8 @@ namespace WeenieWalker
                 int randClip = Random.Range(0, voClips.Count);
                 AudioClip clip = voClips[randClip];
 
-                source.clip = clip;
-                source.PlayDelayed(mimicWait);
+                sources[0].clip = clip;
+                sources[0].PlayDelayed(mimicWait);
             }
         }
 
@@ -41,8 +42,23 @@ namespace WeenieWalker
 
             AudioClip clip = voClips[clipNum];
 
-            source.clip = clip;
-            source.Play();
+            sources[0].clip = clip;
+            sources[0].Play();
         }
+
+        public void PlayAnsweredQuestionClip(bool isCorrect)
+        {
+            int correct = isCorrect ? 1:0;
+
+            sources[2].clip = questionAnswerClips[correct];
+            sources[2].Play();
+        }
+    }
+
+    public enum AudioSourceOptions
+    {
+        VO,
+        BGM,
+        SFX
     }
 }
