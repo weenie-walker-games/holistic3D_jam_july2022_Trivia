@@ -30,6 +30,8 @@ namespace WeenieWalker
         [SerializeField] TMP_Text coinText;
         [SerializeField] TMP_Text heartText;
         [SerializeField] TMP_Text gemText;
+        [SerializeField] GameObject addGemParent;
+        [SerializeField] TMP_Text addGemText;
         [SerializeField] TMP_Text streakText;
 
         [Header("MessageCanvases")]
@@ -61,6 +63,7 @@ namespace WeenieWalker
             LootManager.OnUpdateCoins += SetCoins;
             LootManager.OnUpdateGems += SetGems;
             LootManager.OnUpdateHearts += SetHearts;
+            LootManager.OnGemCorrectAnswer += GemCorrectAnswer;
         }
 
         private void OnDisable()
@@ -76,6 +79,7 @@ namespace WeenieWalker
             LootManager.OnUpdateCoins -= SetCoins;
             LootManager.OnUpdateGems -= SetGems;
             LootManager.OnUpdateHearts -= SetHearts;
+            LootManager.OnGemCorrectAnswer -= GemCorrectAnswer;
         }
 
 
@@ -106,6 +110,8 @@ namespace WeenieWalker
 
         private void SetDifficultyImage(string difficulty)
         {
+            addGemParent.SetActive(false);
+
             difficultyString = difficulty;
             int difficultyAmount = ConvertDifficulty(difficulty);
 
@@ -152,12 +158,15 @@ namespace WeenieWalker
             }
             else
             {
-                if (storedCorrectAnswer == "true")
-                    correctAnswerSpot = booleanAnswerSpots[0].gameObject;
-                else
+                Debug.Log(storedCorrectAnswer);
+                if (storedCorrectAnswer == "False")
                     correctAnswerSpot = booleanAnswerSpots[1].gameObject;
+                else
+                    correctAnswerSpot = booleanAnswerSpots[0].gameObject;
                 booleanAnswerHolder.SetActive(true);
                 multipleAnswerHolder.SetActive(false);
+
+                Debug.Log(correctAnswerSpot.gameObject.name);
             }
         }
 
@@ -179,6 +188,8 @@ namespace WeenieWalker
             }
             else
             {
+                storedCorrectAnswer = storedCorrectAnswer.ToUpper();
+
                 correctlyGuessed = booleanAnswerSpots[currentlySelectedOption].text == storedCorrectAnswer;
             }
 
@@ -230,6 +241,13 @@ namespace WeenieWalker
             gemText.text = amount.ToString();
         }
 
+        private void GemCorrectAnswer(int addedAmount)
+        {
+            Debug.Log("gems message on");
+            addGemText.text = "+" + addedAmount.ToString();
+            addGemParent.SetActive(true);
+        }
+
         private void SetHearts(int amount, bool isLosingALife)
         {
             heartText.text = amount.ToString();
@@ -265,6 +283,7 @@ namespace WeenieWalker
 
         public void CloseCanvas()
         {
+
             lostHeartCanvas.SetActive(false);
             GameManager.Instance.MoveBackToDefault(false);
         }

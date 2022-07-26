@@ -8,6 +8,7 @@ namespace WeenieWalker
     {
         public static event System.Action<int> OnUpdateCoins;
         public static event System.Action<int> OnUpdateGems;
+        public static event System.Action<int> OnGemCorrectAnswer;
         public static event System.Action<int, bool> OnUpdateHearts;
 
         [SerializeField] int minCoinAmount = 1;
@@ -80,6 +81,7 @@ namespace WeenieWalker
         {
             newCoinValue = Random.Range(minCoinAmount, maxCoinAmount);
             correctlyAnswered = isCorrect;
+            int newGemValue = 0;
 
             if (isCorrect)
             {
@@ -88,22 +90,25 @@ namespace WeenieWalker
                 switch (difficulty)
                 {
                     case "easy":
-                        Gems += 1;
+                        newGemValue = 1;
                         newCoinValue *= 2;
                         break;
                     case "medium":
-                        Gems += 5;
+                        newGemValue = 5;
                         newCoinValue *= 3;
                         break;
                     case "hard":
-                        Gems += 10;
+                        newGemValue = 10;
                         newCoinValue *= 4;
                         break;
                     default:
                         break;
                 }
+
+                OnGemCorrectAnswer?.Invoke(newGemValue);
             }
 
+            Gems += newGemValue;
             OnUpdateGems?.Invoke(Gems);
         }
 
